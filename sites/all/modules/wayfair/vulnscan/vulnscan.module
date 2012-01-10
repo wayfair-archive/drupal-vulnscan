@@ -1,0 +1,58 @@
+<?php
+/**
+ * @file
+ * Wayfair Vulnerability Scanner module
+ */
+
+/**
+ * Implements hook_permission().
+ */
+function vulnscan_permission() {
+    /*
+     * TODO:
+     *     1) Add permission for scanning each server group
+     */
+    return array(
+        'administer servers' => array(
+            'title' => t('Administer server groups'),
+            'description' => t('Create/Modify/Delete Server Groups'),
+        ),
+        'scan all servers' => array(
+            'title' => t('Scan all servers'),
+            'description' => t('Scan all servers'),
+        ),
+        'administer scans' => array(
+            'title' => t('Administer scans'),
+            'description' => t('Modify/Delete existing scans'),
+        ),
+        'run scan' => array(
+            'title' => t('Run scan'),
+            'description' => t('Run a new scan'),
+        ),
+        'view own scans' => array(
+            'title' => t('View own scans'),
+            'description' => t('View own scans'),
+        ),
+        'view others scans' => array(
+            'title' => t('View other\'s scans'),
+            'description' => t('View other\'s scans'),
+        ),
+    );
+}
+
+/**
+ * Implements hook_menu().
+ */
+function vulnscan_menu() {
+    $items['vulnscan/scan'] = array(
+        'title' => 'Run Scan',
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('vulnscan_scan_form'),
+        'file' => 'scan.inc',
+        'access callback' => 'user_access',
+        'access arguments' => array('run scan'),
+        'type' => MENU_NORMAL_ITEM,
+    );
+
+    return $items;
+}

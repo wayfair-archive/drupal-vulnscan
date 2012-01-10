@@ -1,0 +1,6 @@
+name = Vulnerability Scanner
+description = Wayfair Vulnerability Scanner
+package = Wayfair Security
+core = 7.x
+files[] = vulnscan.module
+
