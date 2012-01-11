@@ -44,6 +44,29 @@ function vulnscan_permission() {
  * Implements hook_menu().
  */
 function vulnscan_menu() {
+    /* Admin settings */
+    $items['admin/config/vulnscan'] = array(
+        'title' => 'Wayfair Vulnerability Scanner',
+        'description' => 'Wayfair Vulnerability Scanner options.',
+        'position' => 'right',
+        'weight' => -5,
+        'page callback' => 'system_admin_menu_block_page',
+        'access arguments' => array('administer site configuration'),
+        'file' => 'system.admin.inc',
+        'file path' => drupal_get_path('module', 'system'),
+    );
+
+    $items['admin/config/vulnscan/settings'] = array(
+        'title' => 'Wayfair Vulnerability Scanner settings.',
+        'description' => 'Change Wayfair Vulnerability Scanner settings.',
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('vulnscan_admin_settings'),
+        'access arguments' => array('administer site configuration'),
+        'type' => MENU_NORMAL_ITEM,
+        'file' => 'vulnscan.admin.inc',
+    );
+
+    /* Actions */
     $items['vulnscan/scan'] = array(
         'title' => 'Run Scan',
         'page callback' => 'drupal_get_form',

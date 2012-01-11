@@ -4,4 +4,5 @@ package = Wayfair Security
 core = 7.x
 version = 0.1
 files[] = vulnscan.module
-
+files[] = vulnscan.install
+files[] = vulnscan.admin.inc
