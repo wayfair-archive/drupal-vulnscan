@@ -4,7 +4,7 @@
  * Implements hook_schema().
  */
 function vulnscan_schema() {
-    $schema['server'] = array(
+    $schema['vulnscan_server'] = array(
         'description' => 'Table for servers.',
         'fields' => array(
             'name' => array(
@@ -14,16 +14,10 @@ function vulnscan_schema() {
                 'not null' => TRUE,
             ),
         ),
-        'indexes' => array(
-            'name' => array('name'),
-        ),
-        'unique keys' => array(
-            'name' => array('name'),
-        ),
-        'primary key' => 'name',
+        'primary key' => array('name'),
     );
 
-    $schema['servergroup'] = array(
+    $schema['vulnscan_servergroup'] = array(
         'description' => 'Table for server groups.',
         'fields' => array(
             'groupname' => array(
@@ -33,16 +27,10 @@ function vulnscan_schema() {
                 'not null' => TRUE,
             ),
         ),
-        'indexes' => array(
-            'groupname' => array('groupname'),
-        ),
-        'unique keys' => array(
-            'groupname' => array('groupname'),
-        ),
-        'primary key' => 'groupname'
+        'primary key' => array('groupname'),
     );
 
-    $schema['servergroupmapping'] = array(
+    $schema['vulnscan_servergroupmapping'] = array(
         'description' => 'Table to map servers to server groups.',
         'fields' => array(
             'servername' => array(
@@ -59,16 +47,16 @@ function vulnscan_schema() {
             ),
         ),
         'indexes' => array(
-            'servername' => array('servername'),
-            'groupname' => array('groupname'),
+            'index_servername' => array('servername'),
+            'index_groupname' => array('groupname'),
         ),
         'foreign keys' => array(
             'servername' => array(
-                'table' => 'server',
+                'table' => 'vulnscan_server',
                 'columns' => array('servername' => 'name'),
             ),
             'groupname' => array(
-                'table' => 'servergroup',
+                'table' => 'vulnscan_servergroup',
                 'columns' => array('groupname' => 'groupname'),
             ),
         ),
@@ -78,7 +66,7 @@ function vulnscan_schema() {
         'primary key' => array('servername', 'groupname'),
     );
 
-    $schema['userservermapping'] = array(
+    $schema['vulnscan_userservermapping'] = array(
         'description' => 'Table to map server groups to users.',
         'fields' => array(
             'uid' => array(
@@ -103,14 +91,14 @@ function vulnscan_schema() {
                 'columns' => array('uid' => 'uid'),
             ),
             'groupname' => array(
-                'table' => 'servergroup',
+                'table' => 'vulnscan_servergroup',
                 'columns' => array('groupname' => 'groupname'),
             ),
         ),
         'primary key' => array('uid', 'groupname'),
     );
 
-    $schema['scan'] = array(
+    $schema['vulnscan_scan'] = array(
         'description' => 'Table for recorded scans.',
         'fields' => array(
             'scanid' => array(
