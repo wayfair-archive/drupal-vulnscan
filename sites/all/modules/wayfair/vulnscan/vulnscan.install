@@ -1,0 +1,145 @@
+<?php
+
+/**
+ * Implements hook_schema().
+ */
+function vulnscan_schema() {
+    $schema['server'] = array(
+        'description' => 'Table for servers.',
+        'fields' => array(
+            'name' => array(
+                'description' => 'The server\'s name. Used in the cookie value.',
+                'type' => 'varchar',
+                'length' => 64,
+                'not null' => TRUE,
+            ),
+        ),
+        'indexes' => array(
+            'name' => array('name'),
+        ),
+        'unique keys' => array(
+            'name' => array('name'),
+        ),
+        'primary key' => 'name',
+    );
+
+    $schema['servergroup'] = array(
+        'description' => 'Table for server groups.',
+        'fields' => array(
+            'groupname' => array(
+                'description' => 'Name of the server group.',
+                'type' => 'varchar',
+                'length' => 100,
+                'not null' => TRUE,
+            ),
+        ),
+        'indexes' => array(
+            'groupname' => array('groupname'),
+        ),
+        'unique keys' => array(
+            'groupname' => array('groupname'),
+        ),
+        'primary key' => 'groupname'
+    );
+
+    $schema['servergroupmapping'] = array(
+        'description' => 'Table to map servers to server groups.',
+        'fields' => array(
+            'servername' => array(
+                'description' => 'The name of the server',
+                'type' => 'varchar',
+                'length' => 64,
+                'not null' => TRUE,
+            ),
+            'groupname' => array(
+                'description' => 'The name of the server group',
+                'type' => 'varchar',
+                'length' => 100,
+                'not null' => TRUE,
+            ),
+        ),
+        'indexes' => array(
+            'servername' => array('servername'),
+            'groupname' => array('groupname'),
+        ),
+        'foreign keys' => array(
+            'servername' => array(
+                'table' => 'server',
+                'columns' => array('servername' => 'name'),
+            ),
+            'groupname' => array(
+                'table' => 'servergroup',
+                'columns' => array('groupname' => 'groupname'),
+            ),
+        ),
+        'unique keys' => array(
+            'servername_groupname' => array('servername', 'groupname'),
+        ),
+        'primary key' => array('servername', 'groupname'),
+    );
+
+    $schema['userservermapping'] = array(
+        'description' => 'Table to map server groups to users.',
+        'fields' => array(
+            'uid' => array(
+                'description' => 'The {user}.uid of the logged-in user',
+                'type' => 'int',
+                'not null' => TRUE,
+                'unsigned' => TRUE,
+            ),
+            'groupname' => array(
+                'description' => 'The {servergroup}.groupname of the server group',
+                'type' => 'varchar',
+                'length' => 100,
+                'not null' => TRUE,
+            ),
+        ),
+        'unique keys' => array(
+            'uid_groupname' => array('uid', 'groupname'),
+        ),
+        'foreign keys' => array(
+            'uid' => array(
+                'table' => 'users',
+                'columns' => array('uid' => 'uid'),
+            ),
+            'groupname' => array(
+                'table' => 'servergroup',
+                'columns' => array('groupname' => 'groupname'),
+            ),
+        ),
+        'primary key' => array('uid', 'groupname'),
+    );
+
+    $schema['scan'] = array(
+        'description' => 'Table for recorded scans.',
+        'fields' => array(
+            'scanid' => array(
+                'description' => 'The primary identifier for a scan.',
+                'type' => 'serial',
+                'unsigned' => TRUE,
+                'not null' => TRUE,
+            ),
+            'uid' => array(
+                'description' => 'uid of owner.',
+                'type' => 'int',
+                'unsigned' => TRUE,
+                'not null' => TRUE,
+            ),
+            'location' => array(
+                'description' => 'Location of the result files.',
+                'type' => 'varchar',
+                'length' => 500,
+                'not null' => TRUE,
+            ),
+        ),
+        'foreign keys' => array(
+            'uid' => array(
+                'table' => 'users',
+                'columns' => array('uid' => 'uid'),
+            ),
+        ),
+        'primary key' => array('scanid'),
+    );
+
+    return $schema;
+}
