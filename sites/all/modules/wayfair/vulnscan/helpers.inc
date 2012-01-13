@@ -122,3 +122,41 @@ function add_servers_in_server_group($groupname, $servers=array()) {
 
     return true;
 }
+
+/* User accesses */
+function user_can_scan_group($user, $groupname) {
+    foreach (user_role_permissions($user->roles) as $perms) {
+        foreach ($perms as $key => $value) {
+            if (strpos($key, $groupname) !== FALSE)
+                return TRUE;
+        }
+    }
+
+    return FALSE;
+}
+
+function user_can_scan_server($user, $servername) {
+    $groups = get_all_server_groups();
+
+    foreach ($groups as $group) {
+        $servers = get_all_servers_in_server_group($group->groupname);
+
+        foreach ($servers as $server)
+            if (!strcmp($server->servername, $servername))
+                if (user_can_scan_group($user, $group->groupname))
+                    return TRUE;
+    }
+
+    return FALSE;
+}
+
+function user_scannable_groups($user) {
+    $ret = array();
+    $groups = get_all_server_groups_assoc();
+
+    foreach ($groups as $key => $value)
+        if (user_can_scan_group($user, $key))
+            $ret[$key] = $value;
+
+    return $ret;
+}

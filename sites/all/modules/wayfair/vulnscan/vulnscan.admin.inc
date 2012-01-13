@@ -117,18 +117,20 @@ function vulnscan_admin_settings_servergroup($form, &$form_state) {
                 );
             }
 
-            $form['vulnscan_new_servers'] = array(
-                '#type' => 'fieldset',
-                '#title' => t('Add New Servers'),
-                '#collapsible' => TRUE,
-                '#collapsed' => FALSE,
-            );
+            if (count($new_servers)) {
+                $form['vulnscan_new_servers'] = array(
+                    '#type' => 'fieldset',
+                    '#title' => t('Add New Servers'),
+                    '#collapsible' => TRUE,
+                    '#collapsed' => FALSE,
+                );
 
-            $form['vulnscan_new_servers']['new_server'] = array(
-                '#type' => 'select',
-                '#multiple' => TRUE,
-                '#options' => $new_servers,
-            );
+                $form['vulnscan_new_servers']['new_server'] = array(
+                    '#type' => 'select',
+                    '#multiple' => TRUE,
+                    '#options' => $new_servers,
+                );
+            }
         }
     }
 
