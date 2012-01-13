@@ -56,21 +56,114 @@ function vulnscan_admin_settings_submit($form, &$form_state) {
     variable_set('vulnscan_skipfish_location', $form_state['values']['skipfish_location']);
 
     /* Save the new server */
-    if (isset($form_state['values']['new_server']) && strlen($form_state['values']['new_server'])) {
-        $name = strtoupper($form_state['values']['new_server']);
-        $servers = get_all_servers_assoc();
+    if (isset($form_state['values']['new_server']) && strlen($form_state['values']['new_server']))
+        if (add_server($form_state['values']['new_server']) == false)
+            form_set_error('new_server', t('An error occurred adding the server @server', array('@server' => $form_state['values']['new_server'])));
 
-        if (array_key_exists($name, $servers)) {
-            form_set_error('new_server', t('Server @server already exists.', array('@server' => $name)));
-        } else {
-            db_insert('vulnscan_server')->fields(array(
-                'name' => $name
-            ))->execute();
+    /* Delete selected servers */
+    if (isset($form_state['values']['servers']))
+        delete_servers(array_filter($form_state['values']['servers']));
+}
+
+function vulnscan_admin_settings_servergroup($form, &$form_state) {
+//    form_set_error('new_servergroup', t('form_state: @state', array('@state' => var_export($form_state, TRUE))));
+//    form_set_error('new_servergroup', t('form_state: @state', array('@state' => var_export($form_state, TRUE))));
+    $groups = get_all_server_groups_assoc();
+
+    $form['vulnscan_servergroup'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Server Group'),
+    );
+
+    if (count($groups) > 0) {
+        $form['vulnscan_servergroup']['servergroup'] = array(
+            '#type' => 'select',
+            '#title' => t('Server Group'),
+            '#options' => $groups,
+        );
+    }
+
+    $form['vulnscan_servergroup']['new_servergroup'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Add New Server Group'),
+        '#size' => 30,
+    );
+
+    if (isset($form_state['input']['servergroup'])) {
+        $existing_servers = get_all_servers_in_server_group_assoc($form_state['input']['servergroup']);
+        $all = get_all_servers_assoc();
+
+        /* Only show existing/add fieldsets if servers exist */
+        if (count($all)) {
+
+            $new_servers = array();
+            foreach ($all as $key => $value)
+                if (array_key_exists($key, $existing_servers) == false)
+                    $new_servers[$key] = $value;
+
+            if (count($existing_servers)) {
+                $form['vulnscan_existing_servers'] = array(
+                    '#type' => 'fieldset',
+                    '#title' => t('Assigned Servers'),
+                    '#collapsible' => TRUE,
+                    '#collapsed' => FALSE,
+                );
+
+                $form['vulnscan_existing_servers']['existing_servers'] = array(
+                    '#type' => 'select',
+                    '#multiple' => TRUE,
+                    '#description' => t('Select one or more to delete'),
+                    '#options' => $existing_servers
+                );
+            }
+
+            $form['vulnscan_new_servers'] = array(
+                '#type' => 'fieldset',
+                '#title' => t('Add New Servers'),
+                '#collapsible' => TRUE,
+                '#collapsed' => FALSE,
+            );
+
+            $form['vulnscan_new_servers']['new_server'] = array(
+                '#type' => 'select',
+                '#multiple' => TRUE,
+                '#options' => $new_servers,
+            );
         }
     }
 
-    /* Delete selected servers */
-    if (isset($form_state['values']['servers'])) {
-        delete_servers(array_filter($form_state['values']['servers']));
+    $form['select_servergroup'] = array(
+        '#type' => 'submit',
+        '#submit' => array('vulnscan_admin_settings_servergroup_setservergroup'),
+        '#value' => t('Select Server Group'),
+    );
+
+    $form['submit'] = array(
+        '#type' => 'submit',
+        '#value' => t('Save Settings'),
+    );
+
+    return $form;
+}
+
+function vulnscan_admin_settings_servergroup_setservergroup($form, &$form_state) {
+    $form_state['rebuild'] = TRUE;
+}
+
+function vulnscan_admin_settings_servergroup_submit($form, &$form_state) {
+    if (isset($form_state['values']['new_servergroup']) && strlen($form_state['values']['new_servergroup']))
+        if (add_server_group($form_state['values']['new_servergroup']) == false)
+            form_set_error('new_servergroup', t('Could not add Server Group @group', array('@group' => $form['values']['new_servergroup'])));
+
+    if (isset($form_state['values']['existing_servers'])) {
+        remove_servers_in_server_group($form_state['values']['servergroup'], array_filter($form_state['values']['existing_servers']));
     }
+
+    if (isset($form_state['values']['new_server'])) {
+        if (add_servers_in_server_group($form_state['values']['servergroup'], array_filter($form_state['values']['new_server'])) == false) {
+            form_set_error('new_server', t('Could not assign servers to group.'));
+        }
+    }
+
+    $form_state['rebuild'] = TRUE;
 }

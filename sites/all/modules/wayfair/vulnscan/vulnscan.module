@@ -4,15 +4,15 @@
  * Wayfair Vulnerability Scanner module
  */
 
+require_once('helpers.inc');
+
 /**
  * Implements hook_permission().
  */
 function vulnscan_permission() {
-    /*
-     * TODO:
-     *     1) Add permission for scanning each server group
-     */
-    return array(
+    $groups = get_all_server_groups_assoc();
+
+    $perms = array(
         'administer servers' => array(
             'title' => t('Administer server groups'),
             'description' => t('Create/Modify/Delete Server Groups'),
@@ -38,6 +38,14 @@ function vulnscan_permission() {
             'description' => t('View other\'s scans'),
         ),
     );
+
+    foreach ($groups as $key => $value) {
+        $perms['scan ' . $value] = array(
+            'title' => t('Run scan for Server Group @group', array('@group' => $value)),
+        );
+    }
+
+    return $perms;
 }
 
 /**
@@ -61,6 +69,16 @@ function vulnscan_menu() {
         'description' => 'Change Wayfair Vulnerability Scanner settings.',
         'page callback' => 'drupal_get_form',
         'page arguments' => array('vulnscan_admin_settings'),
+        'access arguments' => array('administer site configuration'),
+        'type' => MENU_NORMAL_ITEM,
+        'file' => 'vulnscan.admin.inc',
+    );
+
+    $items['admin/config/vulnscan/servergroups'] = array(
+        'title' => 'Server Group settings.',
+        'description' => 'Add/Modify/Delete Server Groups',
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('vulnscan_admin_settings_servergroup'),
         'access arguments' => array('administer site configuration'),
         'type' => MENU_NORMAL_ITEM,
         'file' => 'vulnscan.admin.inc',

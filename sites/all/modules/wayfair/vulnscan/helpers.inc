@@ -1,5 +1,7 @@
 <?php
 
+/* Server functions */
+
 function get_all_servers() {
     return db_query('SELECT * FROM {vulnscan_server}');
 }
@@ -17,8 +19,106 @@ function get_all_servers_assoc() {
 function delete_servers($servers = array()) {
     /* $servers array needs to be an associative array (e.g. array('servername' => 'servername') */
     foreach ($servers as $key => $value) {
+        db_delete('vulnscan_servergroupmapping')
+            ->condition('servername', $value)
+            ->execute();
+
         db_delete('vulnscan_server')
             ->condition('name',  $value)
             ->execute();
     }
+}
+
+function add_server($server) {
+    if (strlen($server) == 0)
+        return false;
+
+    $name = strtoupper($server);
+    $servers = get_all_servers_assoc();
+
+    if (array_key_exists($name, $servers))
+        return false;
+
+    db_insert('vulnscan_server')
+        ->fields(array(
+            'name' => $name,
+        ))->execute();
+
+    return true;
+}
+
+/* Server Group functions */
+
+function get_all_server_groups() {
+    return db_query('SELECT * FROM {vulnscan_servergroup}');
+}
+
+function get_all_server_groups_assoc() {
+    $groups = array();
+    $result = get_all_server_groups();
+
+    foreach ($result as $record)
+        $groups[$record->groupname] = $record->groupname;
+
+    return $groups;
+}
+
+function add_server_group($groupname) {
+    if (strlen($groupname) == 0)
+        return false;
+
+    $groups = get_all_server_groups_assoc();
+    if (array_key_exists($groupname, $groups))
+        return false;
+
+    db_insert('vulnscan_servergroup')
+        ->fields(array(
+            'groupname' => $groupname,
+        ))->execute();
+
+    return true;
+}
+
+function get_all_servers_in_server_group($groupname) {
+    return db_query('SELECT servername FROM {vulnscan_servergroupmapping} WHERE groupname = :groupname', array(':groupname' => $groupname));
+}
+
+function get_all_servers_in_server_group_assoc($groupname) {
+    $servers = array();
+    $result = get_all_servers_in_server_group($groupname);
+
+    foreach ($result as $record)
+        $servers[$record->servername] = $record->servername;
+
+    return $servers;
+}
+
+function get_all_servers_in_server_group_for_default($groupname) {
+    $servers = array();
+    $result = get_all_servers_in_server_group($groupname);
+
+    foreach ($result as $record)
+        $servers[$record->servername] = $record->servername;
+
+    return $servers;
+}
+
+function remove_servers_in_server_group($groupname, $servers=array()) {
+    foreach ($servers as $key => $value) {
+        db_delete('vulnscan_servergroupmapping')
+            ->condition('groupname', $groupname)
+            ->condition('servername', $value)
+            ->execute();
+    }
+}
+
+function add_servers_in_server_group($groupname, $servers=array()) {
+    foreach ($servers as $server)
+        db_insert('vulnscan_servergroupmapping')
+            ->fields(array(
+                'groupname' => $groupname,
+                'servername' => $server,
+            ))->execute();
+
+    return true;
 }
