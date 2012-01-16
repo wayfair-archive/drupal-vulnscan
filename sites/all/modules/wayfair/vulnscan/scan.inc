@@ -7,10 +7,6 @@ function vulnscan_scan_form($form, &$form_state) {
     $servers = array();
     $sites = get_all_sites_assoc();
 
-    foreach ($groups as $group)
-        foreach (get_all_servers_in_server_group_assoc($group) as $key => $value)
-            $servers[$key] = $value;
-
     if (count($groups) == 0) {
         $form['vulnscan_nogroups'] = array(
             '#type' => 'markup',
@@ -21,6 +17,21 @@ function vulnscan_scan_form($form, &$form_state) {
 
         return $form;
     }
+
+    if (count($sites) == 0) {
+        $form['vulnscan_nosites'] = array(
+            '#type' => 'markup',
+            '#prefix' => '<div>',
+            '#markup' => t('No scannable sites'),
+            '#suffix' => '</div>',
+        );
+
+        return $form;
+    }
+
+    foreach ($groups as $group)
+        foreach (get_all_servers_in_server_group_assoc($group) as $key => $value)
+            $servers[$key] = $value;
 
     $form['vulnscan_scan_server_groups'] = array(
         '#type' => 'fieldset',
