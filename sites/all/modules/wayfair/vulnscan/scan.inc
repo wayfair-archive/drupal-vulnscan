@@ -68,9 +68,10 @@ function vulnscan_scan_form_submit($form, &$form_state) {
                 drupal_set_message(t('Invalid group: @group', array('@group' => $group)), 'error');
                 continue;
             }
-        }
 
-        run_scan_on_server_groups($site, array_filter($form_state['values']['groups']));
+            if (run_scan_on_server_group($site, $group) == false)
+                return;
+        }
     }
 
     if (isset($form_state['values']['servers'])) {
@@ -79,6 +80,8 @@ function vulnscan_scan_form_submit($form, &$form_state) {
                 drupal_set_message(t('Invalid server: @server', array('@server' => $server)), 'error');
                 continue;
             }
+
+            run_scan_on_server($site, $server);
         }
     }
 }

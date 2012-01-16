@@ -202,22 +202,31 @@ function prep_scanner($scanner, $server, $site) {
     return $ret;
 }
 
-function run_scan_on_server_groups($site, $groups=array()) {
+function run_scan_on_server($site, $server) {
     $scanners = scanners();
 
-    foreach ($groups as $group) {
-        foreach (get_all_servers_in_server_group_assoc($group) as $server) {
-            foreach ($scanners as $scanner) {
-                $prepped = prep_scanner($scanner, $server, $site);
-                if ($prepped === False)
-                    return false;
+    foreach ($scanners as $scanner) {
+        $prepped = prep_scanner($scanner, $server, $site);
+        if ($prepped === FALSE)
+            return FALSE;
 
-                exec(t($prepped . ' > /dev/null 2>&1 &'));
-            }
-        }
+        exec($prepped . ' > /dev/null 2>&1 &');
     }
 
-    return true;
+    return TRUE;
+}
+
+function run_scan_on_server_group($site, $group) {
+    foreach (get_all_servers_in_server_group_assoc($group) as $server)
+        if (run_scan_on_server($site, $server) == FALSE)
+            return FALSE;
+
+    return TRUE;
+}
+
+function run_scan_on_server_groups($site, $groups=array()) {
+    foreach ($groups as $group)
+        run_scan_on_server_group($site, $group);
 }
 
 /* Functions for sites to scan */
