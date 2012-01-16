@@ -12,7 +12,7 @@ function vulnscan_list_scans_form($form, &$form_state) {
         $markup .= '<ul>';
 
         foreach ($server_scans as $scan => $location) {
-            $markup .= '<li><a href="' . $location . '">"' . t($scan) . '</a></li>';
+            $markup .= '<li><a href="' . $location . '">' . t($scan) . '</a></li>';
         }
 
         $markup .= '</ul></li>';
