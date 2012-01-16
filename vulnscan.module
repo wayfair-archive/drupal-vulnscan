@@ -13,15 +13,14 @@ function vulnscan_permission() {
     $groups = get_all_server_groups_assoc();
 
     $perms = array(
-        'administer servers' => array(
-            'title' => t('Administer server groups'),
-            'description' => t('Create/Modify/Delete Server Groups'),
+        'administer vulnscan' => array(
+            'title' => t('Administer Wayfair Vulnerability Scanner'),
         ),
         'scan all servers' => array(
             'title' => t('Scan all servers'),
             'description' => t('Scan all servers'),
         ),
-        'administer scans' => array(
+        'administer own scans' => array(
             'title' => t('Administer scans'),
             'description' => t('Modify/Delete existing scans'),
         ),
@@ -31,13 +30,13 @@ function vulnscan_permission() {
         ),
         'view own scans' => array(
             'title' => t('View own scans'),
-            'description' => t('View own scans'),
         ),
         'view others scans' => array(
             'title' => t('View other\'s scans'),
-            'description' => t('View other\'s scans'),
         ),
     );
+
+    /* The "run scan" permission is for the "Run Scan" link to show. The permission below is for actually running the scan. */
 
     foreach ($groups as $key => $value) {
         $perms['scan ' . $value] = array(
@@ -59,7 +58,7 @@ function vulnscan_menu() {
         'position' => 'right',
         'weight' => -5,
         'page callback' => 'system_admin_menu_block_page',
-        'access arguments' => array('administer site configuration'),
+        'access arguments' => array('administer vulnscan'),
         'file' => 'system.admin.inc',
         'file path' => drupal_get_path('module', 'system'),
     );
@@ -69,7 +68,7 @@ function vulnscan_menu() {
         'description' => 'Change Wayfair Vulnerability Scanner settings.',
         'page callback' => 'drupal_get_form',
         'page arguments' => array('vulnscan_admin_settings'),
-        'access arguments' => array('administer site configuration'),
+        'access arguments' => array('administer vulnscan'),
         'type' => MENU_NORMAL_ITEM,
         'file' => 'vulnscan.admin.inc',
     );
@@ -79,7 +78,7 @@ function vulnscan_menu() {
         'description' => 'Add/Modify/Delete Server Groups',
         'page callback' => 'drupal_get_form',
         'page arguments' => array('vulnscan_admin_settings_servergroup'),
-        'access arguments' => array('administer site configuration'),
+        'access arguments' => array('administer vulnscan'),
         'type' => MENU_NORMAL_ITEM,
         'file' => 'vulnscan.admin.inc',
     );
