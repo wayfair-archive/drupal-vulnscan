@@ -160,3 +160,78 @@ function user_scannable_groups($user) {
 
     return $ret;
 }
+
+/* Scanning functions */
+
+function get_site_url($site) {
+    switch ($site) {
+        case t('Admin Home'):
+            return 'http://adminwayfaircom.csnzoo.com/';
+        case t('Wayfair'):
+            return 'http://wayfaircom.csnzoo.com/';
+    }
+}
+
+function scanners() {
+    $scanners = array();
+
+    $skipfish = variable_get('vulnscan_skipfish_location', '');
+    if (strlen($skipfish))
+        $scanners[] = $skipfish;
+
+    return $scanners;
+}
+
+function prep_scanner($scanner, $server, $site) {
+    global $user;
+
+    $output = variable_get('vulnscan_scan_output_location', '');
+
+    $ret = str_replace('%{SERVER}', $server, $scanner);
+    $ret = str_replace('%{SITE}', $site, $ret);
+    
+    /* Output dir should be $output/$uid/<scan> */
+    if (strlen($output)) {
+        $ret = str_replace('%{DIR}', $output . '/' . $user->uid, $ret);
+    }
+    else if (strpos($scanner, '%{DIR}')) {
+        drupal_set_message(t('Scanner configuration requires %{DIR}, but the output location is not set! Please properly configure module.'), 'error');
+        return false;
+    }
+
+    return $ret;
+}
+
+function run_scan_on_server_groups($site, $groups=array()) {
+    $scanners = scanners();
+
+    foreach ($groups as $group) {
+        foreach (get_all_servers_in_server_group_assoc($group) as $server) {
+            foreach ($scanners as $scanner) {
+                $prepped = prep_scanner($scanner, $server, $site);
+                if ($prepped === False)
+                    return false;
+
+                exec(t($prepped . ' > /dev/null 2>&1 &'));
+            }
+        }
+    }
+
+    return true;
+}
+
+/* Functions for sites to scan */
+
+function get_all_sites() {
+    return db_query('SELECT * FROM {vulnscan_sites}');
+}
+
+function get_all_sites_assoc() {
+    $result = get_all_sites();
+    $sites = array();
+
+    foreach ($result as $record)
+        $sites[$record->url] = $record->displayname;
+
+    return $sites;
+}

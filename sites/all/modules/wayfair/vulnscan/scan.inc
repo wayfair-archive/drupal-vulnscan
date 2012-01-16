@@ -1,9 +1,11 @@
 <?php
+require_once('helpers.inc');
 
 function vulnscan_scan_form($form, &$form_state) {
     global $user;
     $groups = user_scannable_groups($user);
     $servers = array();
+    $sites = get_all_sites_assoc();
 
     foreach ($groups as $group)
         foreach (get_all_servers_in_server_group_assoc($group) as $key => $value)
@@ -42,6 +44,12 @@ function vulnscan_scan_form($form, &$form_state) {
         '#options' => $servers,
     );
 
+    $form['vulnscan_scan_host'] = array(
+        '#type' => 'select',
+        '#title' => t('Site to Scan'),
+        '#options' => $sites,
+    );
+
     $form['submit'] = array(
         '#type' => 'submit',
         '#value' => 'Run Scan',
@@ -52,6 +60,7 @@ function vulnscan_scan_form($form, &$form_state) {
 
 function vulnscan_scan_form_submit($form, &$form_state) {
     global $user;
+    $site = $form_state['values']['vulnscan_scan_host'];
 
     if (isset($form_state['values']['groups'])) {
         foreach (array_filter($form_state['values']['groups']) as $group) {
@@ -60,6 +69,8 @@ function vulnscan_scan_form_submit($form, &$form_state) {
                 continue;
             }
         }
+
+        run_scan_on_server_groups($site, array_filter($form_state['values']['groups']));
     }
 
     if (isset($form_state['values']['servers'])) {

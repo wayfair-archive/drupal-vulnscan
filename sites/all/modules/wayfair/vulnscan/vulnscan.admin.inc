@@ -6,18 +6,33 @@ function vulnscan_admin_settings($form, &$form_state) {
     $servers = get_all_servers_assoc();
 
     /* Main settings */
-    $form['vulnscan_skipfish_settings'] = array(
+    $form['vulnscan_scanner_settings'] = array(
         '#type' => 'fieldset',
-        '#title' => t('Skipfish Settings'),
+        '#title' => t('Scanner Settings'),
         '#collapsible' => TRUE,
         '#collapsed' => FALSE,
+        '#description' => t('At least one scanner must be configured.'),
     );
 
-    $form['vulnscan_skipfish_settings']['skipfish_location'] = array(
+    $form['vulnscan_scanner_settings']['replacements'] = array(
+        '#type' => 'markup',
+        '#prefix' => '<div>',
+        '#markup' => t('Replacements: %{SERVER} - Server being scanned (used in cookies). %{SITE} - Site to scan (Wayfair, Admin Home, etc.). %{DIR} - Scan result output directory.'),
+        '#suffix' => '</div>',
+    );
+
+    $form['vulnscan_scanner_settings']['skipfish_location'] = array(
         '#type' => 'textfield',
-        '#title' => t('Skipfish Location'),
-        '#default_value' => variable_get('vulnscan_skipfish_location', '/usr/local/bin/skipfish'),
-        '#size' => 30,
+        '#title' => t('Skipfish Arguments'),
+        '#default_value' => variable_get('vulnscan_skipfish_location', ''),
+        '#size' => 60,
+    );
+
+    $form['vulnscan_scanner_settings']['scan_output_location'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Scan Output Location'),
+        '#default_value' => variable_get('vulnscan_scan_output_location', ''),
+        '#size' => 60,
     );
 
     /* Server settings */
@@ -53,7 +68,11 @@ function vulnscan_admin_settings($form, &$form_state) {
 }
 
 function vulnscan_admin_settings_submit($form, &$form_state) {
-    variable_set('vulnscan_skipfish_location', $form_state['values']['skipfish_location']);
+    if (isset($form_state['values']['vulnscan_skipfish_location']))
+        variable_set('vulnscan_skipfish_location', $form_state['values']['skipfish_location']);
+
+    if (isset($form_state['values']['scan_output_location']))
+        variable_set('vulnscan_scan_output_location', $form_state['values']['scan_output_location']);
 
     /* Save the new server */
     if (isset($form_state['values']['new_server']) && strlen($form_state['values']['new_server']))
@@ -128,6 +147,7 @@ function vulnscan_admin_settings_servergroup($form, &$form_state) {
                 $form['vulnscan_new_servers']['new_server'] = array(
                     '#type' => 'select',
                     '#multiple' => TRUE,
+                    '#description' => t('Select one or more to add'),
                     '#options' => $new_servers,
                 );
             }

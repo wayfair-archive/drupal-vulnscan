@@ -66,68 +66,50 @@ function vulnscan_schema() {
         'primary key' => array('servername', 'groupname'),
     );
 
-    $schema['vulnscan_userservermapping'] = array(
-        'description' => 'Table to map server groups to users.',
+    $schema['vulnscan_sites'] = array(
+        'description' => 'The available sites to scan',
         'fields' => array(
-            'uid' => array(
-                'description' => 'The {user}.uid of the logged-in user',
-                'type' => 'int',
-                'not null' => TRUE,
-                'unsigned' => TRUE,
-            ),
-            'groupname' => array(
-                'description' => 'The {servergroup}.groupname of the server group',
+            'displayname' => array(
                 'type' => 'varchar',
                 'length' => 100,
                 'not null' => TRUE,
             ),
-        ),
-        'unique keys' => array(
-            'uid_groupname' => array('uid', 'groupname'),
-        ),
-        'foreign keys' => array(
-            'uid' => array(
-                'table' => 'users',
-                'columns' => array('uid' => 'uid'),
-            ),
-            'groupname' => array(
-                'table' => 'vulnscan_servergroup',
-                'columns' => array('groupname' => 'groupname'),
-            ),
-        ),
-        'primary key' => array('uid', 'groupname'),
-    );
-
-    $schema['vulnscan_scan'] = array(
-        'description' => 'Table for recorded scans.',
-        'fields' => array(
-            'scanid' => array(
-                'description' => 'The primary identifier for a scan.',
-                'type' => 'serial',
-                'unsigned' => TRUE,
-                'not null' => TRUE,
-            ),
-            'uid' => array(
-                'description' => 'uid of owner.',
-                'type' => 'int',
-                'unsigned' => TRUE,
-                'not null' => TRUE,
-            ),
-            'location' => array(
-                'description' => 'Location of the result files.',
+            'url' => array(
                 'type' => 'varchar',
-                'length' => 500,
-                'not null' => TRUE,
+                'length' => 200,
+                'not null' => TRUE
             ),
         ),
-        'foreign keys' => array(
-            'uid' => array(
-                'table' => 'users',
-                'columns' => array('uid' => 'uid'),
-            ),
-        ),
-        'primary key' => array('scanid'),
+        'primary key' => array('displayname')
     );
 
     return $schema;
+}
+
+/**
+ * Implements hook_install().
+ */
+function vulnscan_install() {
+    variable_set('vulnscan_skipfish_location', '/usr/local/bin/skipfish -u -o \'%{DIR}\' -C \'Server_80=%{SERVER}\' -C \'Server_81=%{SERVER}\' \'%{SITE}\'');
+    variable_set('vulnscan_scan_output_location', '/scans');
+
+    db_insert('vulnscan_sites')
+        ->fields(array(
+            'displayname' => 'Admin Home',
+            'url' => 'http://adminwayfaircom.csnzoo.com',
+        ))->execute();
+
+    db_insert('vulnscan_sites')
+        ->fields(array(
+            'displayname' => 'Wayfair',
+            'url' => 'http://wayfaircom.csnzoo.com',
+        ))->execute();
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function vulnscan_uninstall() {
+    variable_del('vulnscan_skipfish_location');
+    variable_del('vulnscan_scan_output_location');
 }
