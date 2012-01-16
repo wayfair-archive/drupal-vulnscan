@@ -251,3 +251,36 @@ function get_all_sites_assoc() {
 
     return $sites;
 }
+
+/* Functions for retrieving scans */
+
+function list_scans($user) {
+    $scans = array();
+    $base = variable_get('vulnscan_scan_output_location', '');
+
+    if (strlen($base) == 0)
+        return $scans;
+
+    if (is_dir($base . '/' . $user->uid) == false)
+        return $scans;
+
+    $basedir = dir($base . '/' . $user->uid);
+    while (($server = $basedir->read()) !== FALSE) {
+        if ($server[0] == '.')
+            continue;
+
+        $scans[$server] = array();
+
+        $serverdir = dir($base . '/' . $user->uid . '/' . $server);
+        while (($scan = $serverdir->read()) !== FALSE) {
+            if ($scan[0] == '.')
+                continue;
+
+            $scans[$server][$scan] = $base . '/' . $user->uid . '/' . $server . '/' . $scan;
+        }
+        $serverdir->close();
+    }
+    $basedir->close();
+
+    return $scans;
+}
