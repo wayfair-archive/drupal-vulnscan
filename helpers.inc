@@ -216,7 +216,6 @@ function run_scan_on_server($site, $server) {
         if ($prepped === FALSE)
             return FALSE;
 
-        drupal_set_message(t('running: @scan', array('@scan' => $prepped)));
         exec($prepped . ' > /dev/null 2>&1 &');
     }
 
