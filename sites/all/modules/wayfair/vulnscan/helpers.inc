@@ -192,7 +192,13 @@ function prep_scanner($scanner, $server, $site) {
     
     /* Output dir should be $output/$uid/<scan> */
     if (strlen($output)) {
-        $ret = str_replace('%{DIR}', $output . '/' . $user->uid, $ret);
+        $dir = $output;
+        $dir .= '/' . $user->uid;
+        $dir .= '/' . $server;
+        $dir .= '/' . strftime('%F_%T');
+
+        $ret = str_replace('%{DIR}', $dir, $ret);
+        exec("mkdir -p '$dir'");
     }
     else if (strpos($scanner, '%{DIR}')) {
         drupal_set_message(t('Scanner configuration requires %{DIR}, but the output location is not set! Please properly configure module.'), 'error');
@@ -210,6 +216,7 @@ function run_scan_on_server($site, $server) {
         if ($prepped === FALSE)
             return FALSE;
 
+        drupal_set_message(t('running: @scan', array('@scan' => $prepped)));
         exec($prepped . ' > /dev/null 2>&1 &');
     }
 

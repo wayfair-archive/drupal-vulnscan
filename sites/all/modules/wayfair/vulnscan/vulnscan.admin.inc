@@ -68,7 +68,7 @@ function vulnscan_admin_settings($form, &$form_state) {
 }
 
 function vulnscan_admin_settings_submit($form, &$form_state) {
-    if (isset($form_state['values']['vulnscan_skipfish_location']))
+    if (isset($form_state['values']['skipfish_location']))
         variable_set('vulnscan_skipfish_location', $form_state['values']['skipfish_location']);
 
     if (isset($form_state['values']['scan_output_location']))
