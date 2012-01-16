@@ -252,6 +252,22 @@ function get_all_sites_assoc() {
     return $sites;
 }
 
+function add_site($name, $url) {
+    db_insert('vulnscan_sites')
+        ->fields(array(
+            'displayname' => $name,
+            'url' => $url,
+        ))->execute();
+}
+
+function delete_sites($urls=array()) {
+    foreach ($urls as $url) {
+        db_delete('vulnscan_sites')
+            ->condition('url', $url)
+            ->execute();
+    }
+}
+
 /* Functions for retrieving scans */
 
 function list_scans($user) {

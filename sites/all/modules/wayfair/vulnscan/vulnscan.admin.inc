@@ -4,6 +4,7 @@ require_once('helpers.inc');
 
 function vulnscan_admin_settings($form, &$form_state) {
     $servers = get_all_servers_assoc();
+    $sites = get_all_sites_assoc();
 
     /* Main settings */
     $form['vulnscan_scanner_settings'] = array(
@@ -67,6 +68,35 @@ function vulnscan_admin_settings($form, &$form_state) {
         '#size' => 30
     );
 
+    $form['vulnscan_sites'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('Sites to Scan'),
+        '#collapsible' => TRUE,
+        '#collapsed' => FALSE,
+    );
+
+    if (count($sites) > 0) {
+        $form['vulnscan_sites']['sites'] = array(
+            '#type' => 'select',
+            '#title' => t('Existing Sites'),
+            '#description' => t('Select one or more sites to delete upon saving the form.'),
+            '#multiple' => TRUE,
+            '#options' => $sites,
+        );
+    }
+
+    $form['vulnscan_sites']['new_site_name'] = array(
+        '#type' => 'textfield',
+        '#title' => t('New Site Name'),
+        '#size' => 30,
+    );
+
+    $form['vulnscan_sites']['new_site_url'] = array(
+        '#type' => 'textfield',
+        '#title' => t('New Site URL'),
+        '#size' => 30,
+    );
+
     $form['submit'] = array(
         '#type' => 'submit',
         '#value' => t('Save Settings'),
@@ -93,6 +123,13 @@ function vulnscan_admin_settings_submit($form, &$form_state) {
     /* Delete selected servers */
     if (isset($form_state['values']['servers']))
         delete_servers(array_filter($form_state['values']['servers']));
+
+    /* Delete selected sites */
+    if (isset($form_state['values']['sites']))
+        delete_sites(array_filter($form_state['values']['sites']));
+
+    if (isset($form_state['values']['new_site_name']) && strlen($form_state['values']['new_site_name']))
+        add_site($form_state['values']['new_site_name'], $form_state['values']['new_site_url']);
 }
 
 function vulnscan_admin_settings_servergroup($form, &$form_state) {
