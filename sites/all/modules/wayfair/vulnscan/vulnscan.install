@@ -93,18 +93,6 @@ function vulnscan_install() {
     variable_set('vulnscan_skipfish_location', '/usr/local/bin/skipfish -u -o \'%{DIR}\' -C \'Server_80=%{SERVER}\' -C \'Server_81=%{SERVER}\' \'%{SITE}\'');
     variable_set('vulnscan_scan_output_location', '/scans');
     variable_set('vulnscan_alias', '/scans');
-
-    db_insert('vulnscan_sites')
-        ->fields(array(
-            'displayname' => 'Admin Home',
-            'url' => 'http://adminwayfaircom.csnzoo.com',
-        ))->execute();
-
-    db_insert('vulnscan_sites')
-        ->fields(array(
-            'displayname' => 'Wayfair',
-            'url' => 'http://wayfaircom.csnzoo.com',
-        ))->execute();
 }
 
 /**
