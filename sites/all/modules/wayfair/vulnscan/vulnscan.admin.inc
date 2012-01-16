@@ -35,6 +35,14 @@ function vulnscan_admin_settings($form, &$form_state) {
         '#size' => 60,
     );
 
+    $form['vulnscan_scanner_settings']['alias'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Web Server Virtual Path'),
+        '#description' => t('Virtual Path to the scanner output location'),
+        '#default_value' => variable_get('vulnscan_alias', ''),
+        '#size' => 60,
+    );
+
     /* Server settings */
     $form['vulnscan_server_settings'] = array(
         '#type' => 'fieldset',
@@ -74,6 +82,9 @@ function vulnscan_admin_settings_submit($form, &$form_state) {
     if (isset($form_state['values']['scan_output_location']))
         variable_set('vulnscan_scan_output_location', $form_state['values']['scan_output_location']);
 
+    if (isset($form_state['values']['alias']))
+        variable_set('vulnscan_alias', $form_state['values']['alias']);
+
     /* Save the new server */
     if (isset($form_state['values']['new_server']) && strlen($form_state['values']['new_server']))
         if (add_server($form_state['values']['new_server']) == false)
@@ -85,8 +96,6 @@ function vulnscan_admin_settings_submit($form, &$form_state) {
 }
 
 function vulnscan_admin_settings_servergroup($form, &$form_state) {
-//    form_set_error('new_servergroup', t('form_state: @state', array('@state' => var_export($form_state, TRUE))));
-//    form_set_error('new_servergroup', t('form_state: @state', array('@state' => var_export($form_state, TRUE))));
     $groups = get_all_server_groups_assoc();
 
     $form['vulnscan_servergroup'] = array(

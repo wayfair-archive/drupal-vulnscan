@@ -257,12 +257,16 @@ function get_all_sites_assoc() {
 function list_scans($user) {
     $scans = array();
     $base = variable_get('vulnscan_scan_output_location', '');
+    $alias = variable_get('vulnscan_alias', '');
 
     if (strlen($base) == 0)
         return $scans;
 
     if (is_dir($base . '/' . $user->uid) == false)
         return $scans;
+
+    if (strlen($alias) == 0)
+        $alias = $base;
 
     $basedir = dir($base . '/' . $user->uid);
     while (($server = $basedir->read()) !== FALSE) {
@@ -276,7 +280,7 @@ function list_scans($user) {
             if ($scan[0] == '.')
                 continue;
 
-            $scans[$server][$scan] = $base . '/' . $user->uid . '/' . $server . '/' . $scan;
+            $scans[$server][$scan] = $alias . '/' . $user->uid . '/' . $server . '/' . $scan;
         }
         $serverdir->close();
     }

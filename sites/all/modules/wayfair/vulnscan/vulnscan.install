@@ -92,6 +92,7 @@ function vulnscan_schema() {
 function vulnscan_install() {
     variable_set('vulnscan_skipfish_location', '/usr/local/bin/skipfish -u -o \'%{DIR}\' -C \'Server_80=%{SERVER}\' -C \'Server_81=%{SERVER}\' \'%{SITE}\'');
     variable_set('vulnscan_scan_output_location', '/scans');
+    variable_set('vulnscan_alias', '/scans');
 
     db_insert('vulnscan_sites')
         ->fields(array(
@@ -112,4 +113,5 @@ function vulnscan_install() {
 function vulnscan_uninstall() {
     variable_del('vulnscan_skipfish_location');
     variable_del('vulnscan_scan_output_location');
+    variable_del('vulnscan_alias');
 }
