@@ -20,10 +20,6 @@ function vulnscan_permission() {
             'title' => t('Scan all servers'),
             'description' => t('Scan all servers'),
         ),
-        'administer own scans' => array(
-            'title' => t('Administer scans'),
-            'description' => t('Modify/Delete existing scans'),
-        ),
         'run scan' => array(
             'title' => t('Run scan'),
             'description' => t('Run a new scan'),
