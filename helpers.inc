@@ -125,6 +125,9 @@ function add_servers_in_server_group($groupname, $servers=array()) {
 
 /* User accesses */
 function user_can_scan_group($user, $groupname) {
+    if (user_access('scan all servers', $user))
+        return TRUE;
+
     foreach (user_role_permissions($user->roles) as $perms) {
         foreach ($perms as $key => $value) {
             if (strpos($key, $groupname) !== FALSE)
@@ -136,6 +139,9 @@ function user_can_scan_group($user, $groupname) {
 }
 
 function user_can_scan_server($user, $servername) {
+    if (user_access('scan all servers', $user))
+        return TRUE;
+
     $groups = get_all_server_groups();
 
     foreach ($groups as $group) {
