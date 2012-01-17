@@ -295,6 +295,9 @@ function list_scans($user, $allusers=false) {
             if ($uid[0] == '.')
                 continue;
 
+            if ($uid == $user->uid && user_access('view own scans') == false)
+                continue;
+
             $u = user_load($uid);
 
             $serversdir = dir($base . '/' . $uid);

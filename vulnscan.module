@@ -95,10 +95,18 @@ function vulnscan_menu() {
         'page callback' => 'drupal_get_form',
         'page arguments' => array('vulnscan_list_scans_form'),
         'file' => 'view.inc',
-        'access callback' => 'user_access',
-        'access arguments' => array('view own scans', 'view others scans'),
+        'access callback' => 'user_view_perms',
+        'access arguments' => array(array('view own scans', 'view others scans')),
         'type' => MENU_NORMAL_ITEM,
     );
 
     return $items;
+}
+
+function user_view_perms($perms=array()) {
+    foreach ($perms as $perm)
+        if (user_access($perm))
+            return TRUE;
+
+    return FALSE;
 }
