@@ -130,6 +130,8 @@ function vulnscan_admin_settings_submit($form, &$form_state) {
 
     if (isset($form_state['values']['new_site_name']) && strlen($form_state['values']['new_site_name']))
         add_site($form_state['values']['new_site_name'], $form_state['values']['new_site_url']);
+
+    drupal_set_message(t('Settings saved'));
 }
 
 function vulnscan_admin_settings_servergroup($form, &$form_state) {
@@ -232,6 +234,8 @@ function vulnscan_admin_settings_servergroup_submit($form, &$form_state) {
             form_set_error('new_server', t('Could not assign servers to group.'));
         }
     }
+
+    drupal_set_message(t('Settings saved'));
 
     $form_state['rebuild'] = TRUE;
 }

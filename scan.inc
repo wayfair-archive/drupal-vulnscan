@@ -82,6 +82,8 @@ function vulnscan_scan_form_submit($form, &$form_state) {
 
             if (run_scan_on_server_group($site, $group) == false)
                 return;
+            else
+                drupal_set_message(t('Scanning @group in the background.', array('@group' => $group)));
         }
     }
 
@@ -92,7 +94,8 @@ function vulnscan_scan_form_submit($form, &$form_state) {
                 continue;
             }
 
-            run_scan_on_server($site, $server);
+            if (run_scan_on_server($site, $server))
+                drupal_set_message(t('Scanning @server in the background.', array('@server' => $server)));
         }
     }
 }
