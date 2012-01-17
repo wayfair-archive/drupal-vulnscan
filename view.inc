@@ -4,7 +4,12 @@ require_once('helpers.inc');
 
 function vulnscan_list_scans_form($form, &$form_state) {
     global $user;
-    $scans = list_scans($user);
+    $others = false;
+
+    if (user_access('view others scans'))
+        $others = true;
+
+    $scans = list_scans($user, $others);
 
     $markup = '<ul>';
     foreach ($scans as $server => $server_scans) {

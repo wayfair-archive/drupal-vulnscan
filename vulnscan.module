@@ -100,7 +100,7 @@ function vulnscan_menu() {
         'page arguments' => array('vulnscan_list_scans_form'),
         'file' => 'view.inc',
         'access callback' => 'user_access',
-        'access arguments' => array('view own scans'),
+        'access arguments' => array('view own scans', 'view others scans'),
         'type' => MENU_NORMAL_ITEM,
     );
 

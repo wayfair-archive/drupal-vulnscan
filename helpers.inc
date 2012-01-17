@@ -269,7 +269,7 @@ function delete_sites($urls=array()) {
 
 /* Functions for retrieving scans */
 
-function list_scans($user) {
+function list_scans($user, $allusers=false) {
     $scans = array();
     $base = variable_get('vulnscan_scan_output_location', '');
     $alias = variable_get('vulnscan_alias', '');
@@ -283,23 +283,50 @@ function list_scans($user) {
     if (strlen($alias) == 0)
         $alias = $base;
 
-    $basedir = dir($base . '/' . $user->uid);
-    while (($server = $basedir->read()) !== FALSE) {
-        if ($server[0] == '.')
-            continue;
-
-        $scans[$server] = array();
-
-        $serverdir = dir($base . '/' . $user->uid . '/' . $server);
-        while (($scan = $serverdir->read()) !== FALSE) {
-            if ($scan[0] == '.')
+    if ($allusers) {
+        $basedir = dir($base);
+        while (($uid = $basedir->read()) !== FALSE) {
+            if ($uid[0] == '.')
                 continue;
 
-            $scans[$server][$scan] = $alias . '/' . $user->uid . '/' . $server . '/' . $scan;
+            $u = user_load($uid);
+
+            $serversdir = dir($base . '/' . $uid);
+            while (($server = $serversdir->read()) !== FALSE) {
+                if ($server[0] == '.')
+                    continue;
+
+                $serverdir = dir($base . '/' . $uid . '/' . $server);
+                while (($scan = $serverdir->read()) !== FALSE) {
+                    if ($scan[0] == '.')
+                        continue;
+
+                    $scans[$server][$scan . " ({$u->name})"] = $alias . '/' . $uid . '/' . $server . '/' . $scan;
+                }
+                $serverdir->close();
+            }
+            $serversdir->close();
         }
-        $serverdir->close();
+        $basedir->close();
+    } else {
+        $basedir = dir($base . '/' . $user->uid);
+        while (($server = $basedir->read()) !== FALSE) {
+            if ($server[0] == '.')
+                continue;
+
+            $scans[$server] = array();
+
+            $serverdir = dir($base . '/' . $user->uid . '/' . $server);
+            while (($scan = $serverdir->read()) !== FALSE) {
+                if ($scan[0] == '.')
+                    continue;
+
+                $scans[$server][$scan] = $alias . '/' . $user->uid . '/' . $server . '/' . $scan;
+            }
+            $serverdir->close();
+        }
+        $basedir->close();
     }
-    $basedir->close();
 
     return $scans;
 }
