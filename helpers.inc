@@ -318,6 +318,9 @@ function list_scans($user, $allusers=false) {
         }
         $basedir->close();
     } else {
+        if (user_access('view own scans') == false)
+            return $scans;
+
         $basedir = dir($base . '/' . $user->uid);
         while (($server = $basedir->read()) !== FALSE) {
             if ($server[0] == '.')
