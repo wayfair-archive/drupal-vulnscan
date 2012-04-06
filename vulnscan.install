@@ -4,6 +4,29 @@
  * Implements hook_schema().
  */
 function vulnscan_schema() {
+    $schema['vulnscan_scanners'] = array(
+        'description' => 'Available scanners',
+        'fields' => array(
+            'name' => array(
+                'type' => 'varchar',
+                'length' => 20,
+                'not null' => TRUE,
+            ),
+            'location' => array(
+                'type' => 'varchar',
+                'length' => 500,
+                'not null' => TRUE
+            ),
+            'arguments' => array(
+                'type' => 'varchar',
+                'length' => 500,
+                'not null' => TRUE
+            ),
+        ),
+        'primary key' => array('name'),
+    );
+
+
     $schema['vulnscan_server'] = array(
         'description' => 'Table for servers.',
         'fields' => array(
@@ -90,9 +113,15 @@ function vulnscan_schema() {
  * Implements hook_install().
  */
 function vulnscan_install() {
-    variable_set('vulnscan_skipfish_location', '/usr/local/bin/skipfish -u -W /dev/null -o \'%{DIR}\' -C \'Server_80=%{SERVER}\' -C \'Server_81=%{SERVER}\' \'%{SITE}\'');
     variable_set('vulnscan_scan_output_location', '/scans');
     variable_set('vulnscan_alias', '/scans');
+
+    db_insert('vulnscan_scanners')
+        ->fields(array(
+            'name' => 'skipfish',
+            'location' => '/usr/local/bin/skipfish',
+            'arguments' => '-u -W /dev/null -o \'%{DIR}\' -C \'Server_80=%{SERVER}\' -C \'Server_81=%{SERVER}\' \'%{SITE}\'',
+        ))->execute();
 }
 
 /**

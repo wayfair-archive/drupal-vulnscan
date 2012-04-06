@@ -5,6 +5,7 @@ require_once('helpers.inc');
 function vulnscan_admin_settings($form, &$form_state) {
     $servers = get_all_servers_assoc();
     $sites = get_all_sites_assoc();
+    $scanners = get_all_scanners_assoc();
 
     /* Main settings */
     $form['vulnscan_scanner_settings'] = array(
@@ -13,20 +14,6 @@ function vulnscan_admin_settings($form, &$form_state) {
         '#collapsible' => TRUE,
         '#collapsed' => FALSE,
         '#description' => t('At least one scanner must be configured.'),
-    );
-
-    $form['vulnscan_scanner_settings']['replacements'] = array(
-        '#type' => 'markup',
-        '#prefix' => '<div>',
-        '#markup' => t('Replacements: %{SERVER} - Server being scanned (used in cookies). %{SITE} - Site to scan (Wayfair, Admin Home, etc.). %{DIR} - Scan result output directory.'),
-        '#suffix' => '</div>',
-    );
-
-    $form['vulnscan_scanner_settings']['skipfish_location'] = array(
-        '#type' => 'textfield',
-        '#title' => t('Skipfish Arguments'),
-        '#default_value' => variable_get('vulnscan_skipfish_location', ''),
-        '#size' => 60,
     );
 
     $form['vulnscan_scanner_settings']['scan_output_location'] = array(
@@ -41,6 +28,45 @@ function vulnscan_admin_settings($form, &$form_state) {
         '#title' => t('Web Server Virtual Path'),
         '#description' => t('Virtual Path to the scanner output location'),
         '#default_value' => variable_get('vulnscan_alias', ''),
+        '#size' => 60,
+    );
+
+    $form['vulnscan_scanner_settings']['replacements'] = array(
+        '#type' => 'markup',
+        '#prefix' => '<div>',
+        '#markup' => t('Replacements: %{SERVER} - Server being scanned (used in cookies). %{SITE} - Site to scan (Wayfair, Admin Home, etc.). %{DIR} - Scan result output directory.'),
+        '#suffix' => '</div>',
+    );
+
+    if (count($scanners)) {
+        $form['vulnscan_scanner_settings']['scanners'] = array(
+            '#type' => 'select',
+            '#title' => t('Existing Scanners'),
+            '#multiple' => TRUE,
+            '#options' => $scanners,
+        );
+    }
+
+    $form['vulnscan_scanner_settings']['new_scanner'] = array(
+        '#type' => 'fieldset',
+        '#title' => t('New Scanner'),
+    );
+
+    $form['vulnscan_scanner_settings']['new_scanner']['new_scanner_name'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Name'),
+        '#size' => 60,
+    );
+
+    $form['vulnscan_scanner_settings']['new_scanner']['new_scanner_location'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Location'),
+        '#size' => 60,
+    );
+
+    $form['vulnscan_scanner_settings']['new_scanner']['new_scanner_arguments'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Arguments'),
         '#size' => 60,
     );
 
@@ -106,23 +132,26 @@ function vulnscan_admin_settings($form, &$form_state) {
 }
 
 function vulnscan_admin_settings_submit($form, &$form_state) {
-    if (isset($form_state['values']['skipfish_location']))
-        variable_set('vulnscan_skipfish_location', $form_state['values']['skipfish_location']);
-
     if (isset($form_state['values']['scan_output_location']))
         variable_set('vulnscan_scan_output_location', $form_state['values']['scan_output_location']);
 
     if (isset($form_state['values']['alias']))
         variable_set('vulnscan_alias', $form_state['values']['alias']);
 
-    /* Save the new server */
-    if (isset($form_state['values']['new_server']) && strlen($form_state['values']['new_server']))
-        if (add_server($form_state['values']['new_server']) == false)
-            form_set_error('new_server', t('An error occurred adding the server @server', array('@server' => $form_state['values']['new_server'])));
+    if (isset($form_state['values']['scanners']))
+        delete_scanners(array_filter($form_state['values']['scanners']));
+
+    if (isset($form_state['values']['new_scanner_name']) && strlen($form_state['values']['new_scanner_name']))
+        add_scanner($form_state['values']['new_scanner_name'], $form_state['values']['new_scanner_location'], $form_state['values']['new_scanner_arguments']);
 
     /* Delete selected servers */
     if (isset($form_state['values']['servers']))
         delete_servers(array_filter($form_state['values']['servers']));
+
+    /* Save the new server */
+    if (isset($form_state['values']['new_server']) && strlen($form_state['values']['new_server']))
+        if (add_server($form_state['values']['new_server']) == false)
+            form_set_error('new_server', t('An error occurred adding the server @server', array('@server' => $form_state['values']['new_server'])));
 
     /* Delete selected sites */
     if (isset($form_state['values']['sites']))

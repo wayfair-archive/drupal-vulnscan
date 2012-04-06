@@ -16,6 +16,37 @@ function get_all_servers_assoc() {
     return $servers;
 }
 
+function get_all_scanners() {
+    return db_query('SELECT * FROM {vulnscan_scanners}');
+}
+
+function get_all_scanners_assoc() {
+    $scanners = array();
+    $result = get_all_scanners();
+
+    foreach ($result as $record)
+        $scanners[$record->name] = $record->name;
+
+    return $scanners;
+}
+
+function add_scanner($name, $location, $arguments) {
+    db_insert('vulnscan_scanners')
+        ->fields(array(
+            'name' => $name,
+            'location' => $location,
+            'arguments' => $arguments,
+        ))->execute();
+}
+
+function delete_scanners($scanners = array()) {
+    foreach ($scanners as $key => $value) {
+        db_delete('vulnscan_scanners')
+            ->condition('name', $value)
+            ->execute();
+    }
+}
+
 function delete_servers($servers = array()) {
     /* $servers array needs to be an associative array (e.g. array('servername' => 'servername') */
     foreach ($servers as $key => $value) {
@@ -181,14 +212,13 @@ function get_site_url($site) {
 function scanners() {
     $scanners = array();
 
-    $skipfish = variable_get('vulnscan_skipfish_location', '');
-    if (strlen($skipfish))
-        $scanners[] = $skipfish;
+    foreach (get_all_scanners() as $scanner)
+        $scanners[$scanner->name] = $scanner->location . ' ' . $scanner->arguments;
 
     return $scanners;
 }
 
-function prep_scanner($scanner, $server, $site) {
+function prep_scanner($scanner_name, $scanner, $server, $site) {
     global $user;
 
     $output = variable_get('vulnscan_scan_output_location', '');
@@ -201,7 +231,7 @@ function prep_scanner($scanner, $server, $site) {
         $dir = $output;
         $dir .= '/' . $user->uid;
         $dir .= '/' . $server;
-        $dir .= '/' . strftime('%F_%T');
+        $dir .= '/' . $scanner_name . ':' . strftime('%F_%T');
 
         $ret = str_replace('%{DIR}', $dir, $ret);
         exec("mkdir -p '$dir'");
@@ -217,11 +247,12 @@ function prep_scanner($scanner, $server, $site) {
 function run_scan_on_server($site, $server) {
     $scanners = scanners();
 
-    foreach ($scanners as $scanner) {
-        $prepped = prep_scanner($scanner, $server, $site);
+    foreach ($scanners as $name => $location) {
+        $prepped = prep_scanner($name, $location, $server, $site);
         if ($prepped === FALSE)
             return FALSE;
 
+        //drupal_set_message(t('gonna run: @cmd', array('@cmd' => $prepped)));
         exec($prepped . ' > /dev/null 2>&1 &');
     }
 
