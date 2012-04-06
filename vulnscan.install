@@ -128,7 +128,6 @@ function vulnscan_install() {
  * Implements hook_uninstall().
  */
 function vulnscan_uninstall() {
-    variable_del('vulnscan_skipfish_location');
     variable_del('vulnscan_scan_output_location');
     variable_del('vulnscan_alias');
 }
