@@ -31,6 +31,22 @@ function vulnscan_admin_settings($form, &$form_state) {
         '#size' => 60,
     );
 
+    $form['vulnscan_scanner_settings']['vulnscan_script_location'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Helper script location'),
+        '#description' => t('Where the scanner helper script is located'),
+        '#default_value' => variable_get('vulnscan_script_location', ''),
+        '#size' => 60,
+    );
+
+    $form['vulnscan_scanner_settings']['vulnscan_email_from'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Email From'),
+        '#description' => t('Email address from which emails are sent'),
+        '#default_value' => variable_get('vulnscan_email_from', ''),
+        '#size' => 60,
+    );
+
     $form['vulnscan_scanner_settings']['replacements'] = array(
         '#type' => 'markup',
         '#prefix' => '<div>',
@@ -134,6 +150,12 @@ function vulnscan_admin_settings($form, &$form_state) {
 function vulnscan_admin_settings_submit($form, &$form_state) {
     if (isset($form_state['values']['scan_output_location']))
         variable_set('vulnscan_scan_output_location', $form_state['values']['scan_output_location']);
+
+    if (isset($form_state['values']['vulnscan_script_location']))
+        variable_set('vulnscan_script_location', $form_state['values']['vulnscan_script_location']);
+
+    if (isset($form_state['values']['vulnscan_email_from']))
+        variable_set('vulnscan_email_from', $form_state['values']['vulnscan_email_from']);
 
     if (isset($form_state['values']['alias']))
         variable_set('vulnscan_alias', $form_state['values']['alias']);

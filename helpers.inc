@@ -245,12 +245,26 @@ function prep_scanner($scanner_name, $scanner, $server, $site) {
 }
 
 function run_scan_on_server($site, $server) {
+    global $user;
+
     $scanners = scanners();
+    $script = variable_get('vulnscan_script_location', '');
+    $from = variable_get('vulnscan_email_from', '');
+    $to = $user->mail;
+    $date = strftime('%F_%T');
+
+    if (!strlen($script)) {
+        drupal_set_message(t('Helper script location must be set! Please properly configure module.'), 'error');
+        return FALSE;
+    }
 
     foreach ($scanners as $name => $location) {
-        $prepped = prep_scanner($name, $location, $server, $site);
+        $prepped = prep_scanner($name, $location, $server, $site, $date);
         if ($prepped === FALSE)
             return FALSE;
+
+        $prepped = str_replace("'", "\"", $prepped);
+        $prepped = "{$script} -s '{$prepped}' -f '{$from}' -t '{$to}' -l http://www.google.com/";
 
         //drupal_set_message(t('gonna run: @cmd', array('@cmd' => $prepped)));
         exec($prepped . ' > /dev/null 2>&1 &');
