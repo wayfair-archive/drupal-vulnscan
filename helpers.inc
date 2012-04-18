@@ -358,9 +358,15 @@ function list_scans($user, $allusers=false) {
                 if ($server[0] == '.')
                     continue;
 
+                if (is_dir($base . '/' . $uid . '/' . $server) == false)
+                    continue;
+
                 $serverdir = dir($base . '/' . $uid . '/' . $server);
                 while (($scan = $serverdir->read()) !== FALSE) {
                     if ($scan[0] == '.')
+                        continue;
+
+                    if (is_dir($base . '/' . $uid . '/' . $server . '/' . $scan) == false)
                         continue;
 
                     $scans[$server][$scan . " ({$u->name})"] = $alias . '/' . $uid . '/' . $server . '/' . $scan;
@@ -379,11 +385,17 @@ function list_scans($user, $allusers=false) {
             if ($server[0] == '.')
                 continue;
 
+            if (is_dir($base . '/' . $user->uid . '/' . $server) == false)
+                continue;
+
             $scans[$server] = array();
 
             $serverdir = dir($base . '/' . $user->uid . '/' . $server);
             while (($scan = $serverdir->read()) !== FALSE) {
                 if ($scan[0] == '.')
+                    continue;
+
+                if (is_dir($base . '/' . $user->uid . '/' . $server . '/' . $scan) == false)
                     continue;
 
                 $scans[$server][$scan] = $alias . '/' . $user->uid . '/' . $server . '/' . $scan;
