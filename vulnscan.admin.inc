@@ -47,13 +47,6 @@ function vulnscan_admin_settings($form, &$form_state) {
         '#size' => 60,
     );
 
-    $form['vulnscan_scanner_settings']['replacements'] = array(
-        '#type' => 'markup',
-        '#prefix' => '<div>',
-        '#markup' => t('Replacements: %{SERVER} - Server being scanned (used in cookies). %{SITE} - Site to scan (Wayfair, Admin Home, etc.). %{DIR} - Scan result output directory.'),
-        '#suffix' => '</div>',
-    );
-
     if (count($scanners)) {
         $form['vulnscan_scanner_settings']['scanners'] = array(
             '#type' => 'select',
@@ -63,9 +56,51 @@ function vulnscan_admin_settings($form, &$form_state) {
         );
     }
 
+    if (isset($form_state['input']['scanners'])) {
+        $scanner = array_filter($form_state['input']['scanners']);
+        $scanner = $scanner[0];
+        $obj = get_scanner($scanner);
+        
+        $form['vulnscan_scanner_settings']['scanner_details'] = array(
+            '#type' => 'fieldset',
+            '#title' => t('Details for @scanner', array('@scanner' => $scanner)),
+        );
+
+        $form['vulnscan_scanner_settings']['scanner_details']['scanner_details_name'] = array(
+            '#type' => 'textfield',
+            '#title' => t('Name'),
+            '#default_value' => $obj->name,
+            '#size' => 60,
+            '#readonly' => TRUE,
+        );
+
+        $form['vulnscan_scanner_settings']['scanner_details']['scanner_details_location'] = array(
+            '#type' => 'textfield',
+            '#title' => t('Location'),
+            '#default_value' => $obj->location,
+            '#size' => 60,
+            '#readonly' => TRUE,
+        );
+
+        $form['vulnscan_scanner_settings']['scanner_details']['scanner_details_arguments'] = array(
+            '#type' => 'textfield',
+            '#title' => t('Arguments'),
+            '#default_value' => $obj->arguments,
+            '#size' => 60,
+            '#readonly' => TRUE,
+        );
+    }
+
     $form['vulnscan_scanner_settings']['new_scanner'] = array(
         '#type' => 'fieldset',
         '#title' => t('New Scanner'),
+    );
+
+    $form['vulnscan_scanner_settings']['new_scanner']['replacements'] = array(
+        '#type' => 'markup',
+        '#prefix' => '<div>',
+        '#markup' => t('Replacements: %{SERVER} - Server being scanned (used in cookies). %{SITE} - Site to scan (Wayfair, Admin Home, etc.). %{DIR} - Scan result output directory.'),
+        '#suffix' => '</div>',
     );
 
     $form['vulnscan_scanner_settings']['new_scanner']['new_scanner_name'] = array(
@@ -139,6 +174,12 @@ function vulnscan_admin_settings($form, &$form_state) {
         '#size' => 30,
     );
 
+    $form['select_scanner'] = array(
+        '#type' => 'submit',
+        '#submit' => array('show_scanner'),
+        '#value' => t('Show Scanner Details'),
+    );
+
     $form['submit'] = array(
         '#type' => 'submit',
         '#value' => t('Save Settings'),
@@ -183,6 +224,10 @@ function vulnscan_admin_settings_submit($form, &$form_state) {
         add_site($form_state['values']['new_site_name'], $form_state['values']['new_site_url']);
 
     drupal_set_message(t('Settings saved'));
+}
+
+function show_scanner($form, &$form_state) {
+    $form_state['rebuild'] = TRUE;
 }
 
 function vulnscan_admin_settings_servergroup($form, &$form_state) {

@@ -20,6 +20,14 @@ function get_all_scanners() {
     return db_query('SELECT * FROM {vulnscan_scanners}');
 }
 
+function get_scanner($scanner) {
+    $result = db_query('SELECT * FROM {vulnscan_scanners} WHERE name = :name', array(':name' => $scanner));
+    foreach ($result as $record)
+        return $record;
+
+    return null;
+}
+
 function get_all_scanners_assoc() {
     $scanners = array();
     $result = get_all_scanners();
