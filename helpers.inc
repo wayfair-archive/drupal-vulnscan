@@ -226,7 +226,7 @@ function scanners() {
     return $scanners;
 }
 
-function prep_scanner($scanner_name, $scanner, $server, $site) {
+function prep_scanner($scanner_name, $scanner, $server, $site, $date) {
     global $user;
 
     $output = variable_get('vulnscan_scan_output_location', '');
@@ -239,7 +239,7 @@ function prep_scanner($scanner_name, $scanner, $server, $site) {
         $dir = $output;
         $dir .= '/' . $user->uid;
         $dir .= '/' . $server;
-        $dir .= '/' . $scanner_name . ':' . strftime('%F_%T');
+        $dir .= '/' . $scanner_name . ':' . $date;
 
         $ret = str_replace('%{DIR}', $dir, $ret);
         exec("mkdir -p '$dir'");
@@ -260,6 +260,8 @@ function run_scan_on_server($site, $server) {
     $from = variable_get('vulnscan_email_from', '');
     $to = $user->mail;
     $date = strftime('%F_%T');
+    $alias = variable_get('vulnscan_alias', '');
+    $dir = $alias . '/' . $user->uid . '/' . $server . '/';
 
     if (!strlen($script)) {
         drupal_set_message(t('Helper script location must be set! Please properly configure module.'), 'error');
@@ -272,7 +274,7 @@ function run_scan_on_server($site, $server) {
             return FALSE;
 
         $prepped = str_replace("'", "\"", $prepped);
-        $prepped = "{$script} -s '{$prepped}' -f '{$from}' -t '{$to}' -l http://www.google.com/";
+        $prepped = "{$script} -s '{$prepped}' -f '{$from}' -t '{$to}' -l " . url($dir . $name . ':' . $date, array('absolute' => TRUE));
 
         //drupal_set_message(t('gonna run: @cmd', array('@cmd' => $prepped)));
         exec($prepped . ' > /dev/null 2>&1 &');
