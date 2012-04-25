@@ -40,18 +40,6 @@ function vulnscan_schema() {
         'primary key' => array('name'),
     );
 
-    $schema['vulnscan_win_server'] = array(
-        'description' => 'Windows Servers',
-        'fields' => array(
-            'name' => array(
-                'type' => 'varchar',
-                'length' => 64,
-                'not null' => TRUE,
-            ),
-        ),
-        'primary key' => array('name'),
-    );
-
     $schema['vulnscan_servergroup'] = array(
         'description' => 'Table for server groups.',
         'fields' => array(
@@ -101,42 +89,6 @@ function vulnscan_schema() {
         'primary key' => array('servername', 'groupname'),
     );
 
-    $schema['vulnscan_win_servergroupmapping'] = array(
-        'description' => 'Table to map servers to server groups.',
-        'fields' => array(
-            'servername' => array(
-                'description' => 'The name of the server',
-                'type' => 'varchar',
-                'length' => 64,
-                'not null' => TRUE,
-            ),
-            'groupname' => array(
-                'description' => 'The name of the server group',
-                'type' => 'varchar',
-                'length' => 100,
-                'not null' => TRUE,
-            ),
-        ),
-        'indexes' => array(
-            'index_servername' => array('servername'),
-            'index_groupname' => array('groupname'),
-        ),
-        'foreign keys' => array(
-            'servername' => array(
-                'table' => 'vulnscan_win_server',
-                'columns' => array('servername' => 'name'),
-            ),
-            'groupname' => array(
-                'table' => 'vulnscan_servergroup',
-                'columns' => array('groupname' => 'groupname'),
-            ),
-        ),
-        'unique keys' => array(
-            'servername_groupname' => array('servername', 'groupname'),
-        ),
-        'primary key' => array('servername', 'groupname'),
-    );
-
     $schema['vulnscan_sites'] = array(
         'description' => 'The available sites to scan',
         'fields' => array(
@@ -155,14 +107,6 @@ function vulnscan_schema() {
     );
 
     return $schema;
-}
-
-function vulnscan_update_7001() {
-    db_create_table('vulnscan_win_server', drupal_get_schema_unprocessed('vulnscan', 'vulnscan_win_server'));
-}
-
-function vulnscan_update_7002() {
-    db_create_table('vulnscan_win_servergroupmapping', drupal_get_schema_unprocessed('vulnscan', 'vulnscan_win_servergroupmapping'));
 }
 
 /**

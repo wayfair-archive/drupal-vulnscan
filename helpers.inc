@@ -38,19 +38,6 @@ function get_all_scanners_assoc() {
     return $scanners;
 }
 
-function get_all_win_servers() {
-    return db_query('SELECT * FROM {vulnscan_win_server}');
-}
-
-function get_all_win_servers_assoc() {
-    $servers = array();
-
-    foreach (get_all_win_servers() as $server)
-        $servers[$server->name] = $server->name;
-
-    return $servers;
-}
-
 function add_scanner($name, $location, $arguments) {
     db_insert('vulnscan_scanners')
         ->fields(array(
@@ -81,18 +68,6 @@ function delete_servers($servers = array()) {
     }
 }
 
-function delete_win_servers($servers = array()) {
-    foreach ($servers as $key => $value) {
-        db_delete('vulnscan_servergroupmapping')
-            ->condition('servername', $value)
-            ->execute();
-
-        db_delete('vulnscan_win_server')
-            ->condition('name', $value)
-            ->execute();
-    }
-}
-
 function add_server($server) {
     if (strlen($server) == 0)
         return false;
@@ -104,24 +79,6 @@ function add_server($server) {
         return false;
 
     db_insert('vulnscan_server')
-        ->fields(array(
-            'name' => $name,
-        ))->execute();
-
-    return true;
-}
-
-function add_win_server($server) {
-    if (strlen($server) == 0)
-        return false;
-
-    $name = strtoupper($server);
-    $servers = get_all_win_servers_assoc();
-
-    if (array_key_exists($name, $servers))
-        return false;
-
-    db_insert('vulnscan_win_server')
         ->fields(array(
             'name' => $name,
         ))->execute();
@@ -185,19 +142,6 @@ function get_all_servers_in_server_group_for_default($groupname) {
     return $servers;
 }
 
-function get_all_win_servers_in_server_group($groupname) {
-    return db_query('SELECT servername FROM {vulnscan_win_servergroupmapping} WHERE groupname = :groupname', array(':groupname' => $groupname));
-}
-
-function get_all_win_servers_in_server_group_assoc($groupname) {
-    $servers = array();
-    
-    foreach (get_all_win_servers_in_server_group($groupname) as $server)
-        $servers[$server->servername] = $server->servername;
-
-    return $servers;
-}
-
 function remove_servers_in_server_group($groupname, $servers=array()) {
     foreach ($servers as $key => $value) {
         db_delete('vulnscan_servergroupmapping')
@@ -216,27 +160,6 @@ function add_servers_in_server_group($groupname, $servers=array()) {
             ))->execute();
 
     return true;
-}
-
-function add_win_servers_in_server_group($groupname, $servers=array()) {
-    foreach ($servers as $server) {
-        db_insert('vulnscan_win_servergroupmapping')
-            ->fields(array(
-                'groupname' => $groupname,
-                'servername' => $server,
-            ))->execute();
-    }
-
-    return true;
-}
-
-function remove_win_servers_in_server_group($groupname, $servers=array()) {
-    foreach ($servers as $key => $value) {
-        db_delete('vulnscan_win_servergroupmapping')
-            ->condition('groupname', $groupname)
-            ->condition('servername', $value)
-            ->execute();
-    }
 }
 
 /* User accesses */
@@ -262,24 +185,6 @@ function user_can_scan_server($user, $servername) {
 
     foreach ($groups as $group) {
         $servers = get_all_servers_in_server_group($group->groupname);
-
-        foreach ($servers as $server)
-            if (!strcmp($server->servername, $servername))
-                if (user_can_scan_group($user, $group->groupname))
-                    return TRUE;
-    }
-
-    return FALSE;
-}
-
-function user_can_scan_win_server($user, $servername) {
-    if (user_access('scan all servers', $user))
-        return TRUE;
-
-    $groups = get_all_server_groups();
-
-    foreach ($groups as $group) {
-        $servers = get_all_win_servers_in_server_group($group->groupname);
 
         foreach ($servers as $server)
             if (!strcmp($server->servername, $servername))
@@ -321,13 +226,12 @@ function scanners() {
     return $scanners;
 }
 
-function prep_scanner($scanner_name, $scanner, $server, $win_server, $site, $date) {
+function prep_scanner($scanner_name, $scanner, $server, $site, $date) {
     global $user;
 
     $output = variable_get('vulnscan_scan_output_location', '');
 
     $ret = str_replace('%{SERVER}', $server, $scanner);
-    $ret = str_replace('%{WIN_SERVER}', $win_server, $ret);
     $ret = str_replace('%{SITE}', $site, $ret);
     
     /* Output dir should be $output/$uid/<scan> */
@@ -348,7 +252,7 @@ function prep_scanner($scanner_name, $scanner, $server, $win_server, $site, $dat
     return $ret;
 }
 
-function run_scan_on_server($site, $server, $win_server) {
+function run_scan_on_server($site, $server) {
     global $user;
 
     $scanners = scanners();
@@ -365,7 +269,7 @@ function run_scan_on_server($site, $server, $win_server) {
     }
 
     foreach ($scanners as $name => $location) {
-        $prepped = prep_scanner($name, $location, $server, $win_server, $site, $date);
+        $prepped = prep_scanner($name, $location, $server, $site, $date);
         if ($prepped === FALSE)
             return FALSE;
 

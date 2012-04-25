@@ -6,7 +6,6 @@ function vulnscan_admin_settings($form, &$form_state) {
     $servers = get_all_servers_assoc();
     $sites = get_all_sites_assoc();
     $scanners = get_all_scanners_assoc();
-    $win_servers = get_all_win_servers_assoc();
 
     /* Main settings */
     $form['vulnscan_scanner_settings'] = array(
@@ -97,22 +96,10 @@ function vulnscan_admin_settings($form, &$form_state) {
         '#title' => t('New Scanner'),
     );
 
-    $replacements = array(
-        array('%{SERVER}', 'BSD server being scanned (used in cookies)'),
-        array('%{WIN_SERVER}', 'Windows server being scanned (used in cookies)'),
-        array('%{SITE}', 'Site to scan'),
-        array('%{DIR}', 'Scan result output directory'),
-    );
-
-    $header = array('Replacement', 'Meaning');
-
     $form['vulnscan_scanner_settings']['new_scanner']['replacements'] = array(
         '#type' => 'markup',
         '#prefix' => '<div>',
-        '#markup' => theme('table', array(
-            'header' => $header,
-            'rows' => $replacements,
-        )),
+        '#markup' => t('Replacements: %{SERVER} - Server being scanned (used in cookies). %{SITE} - Site to scan (Wayfair, Admin Home, etc.). %{DIR} - Scan result output directory.'),
         '#suffix' => '</div>',
     );
 
@@ -152,26 +139,10 @@ function vulnscan_admin_settings($form, &$form_state) {
         );
     }
 
-    if (count($win_servers)) {
-        $form['vulnscan_server_settings']['win_servers'] = array(
-            '#type' => 'select',
-            '#title' => t('Existing Windows Servers'),
-            '#multiple' => TRUE,
-            '#description' => t('Select one or more servers to delete upon saving the form.'),
-            '#options' => $win_servers,
-        );
-    }
-
     $form['vulnscan_server_settings']['new_server'] = array(
         '#type' => 'textfield',
         '#title' => t('Add a New Server'),
         '#size' => 30
-    );
-
-    $form['vulnscan_server_settings']['new_win_server'] = array(
-        '#type' => 'textfield',
-        '#title' => t('Add a new Windows Server'),
-        '#size' => 30,
     );
 
     $form['vulnscan_sites'] = array(
@@ -240,17 +211,10 @@ function vulnscan_admin_settings_submit($form, &$form_state) {
     if (isset($form_state['values']['servers']))
         delete_servers(array_filter($form_state['values']['servers']));
 
-    if (isset($form_state['values']['win_servers']))
-        delete_win_servers(array_filter($form_state['values']['win_servers']));
-
     /* Save the new server */
     if (isset($form_state['values']['new_server']) && strlen($form_state['values']['new_server']))
         if (add_server($form_state['values']['new_server']) == false)
             form_set_error('new_server', t('An error occurred adding the server @server', array('@server' => $form_state['values']['new_server'])));
-
-    if (isset($form_state['values']['new_win_server']) && strlen($form_state['values']['new_win_server']))
-        if (add_win_server($form_state['values']['new_win_server']) == false)
-            form_set_error('new_win_server', t('An error occurred adding the new Windows server @server', array('@server' => $form_state['values']['new_server'])));
 
     /* Delete selected sites */
     if (isset($form_state['values']['sites']))
@@ -290,35 +254,25 @@ function vulnscan_admin_settings_servergroup($form, &$form_state) {
 
     if (isset($form_state['input']['servergroup'])) {
         $existing_servers = get_all_servers_in_server_group_assoc($form_state['input']['servergroup']);
-        $existing_win_servers = get_all_win_servers_in_server_group_assoc($form_state['input']['servergroup']);
         $all = get_all_servers_assoc();
-        $all_win = get_all_win_servers_assoc();
 
         /* Only show existing/add fieldsets if servers exist */
-        if (count($all) || count($all_win)) {
+        if (count($all)) {
 
             $new_servers = array();
             foreach ($all as $key => $value)
                 if (array_key_exists($key, $existing_servers) == false)
                     $new_servers[$key] = $value;
 
-            $new_win_servers = array();
-            foreach ($all_win as $key => $value)
-                if (array_key_exists($key, $existing_win_servers) == false)
-                    $new_win_servers[$key] = $value;
-
-            if (count($existing_servers) || count($existing_win_servers)) {
+            if (count($existing_servers)) {
                 $form['vulnscan_existing_servers'] = array(
                     '#type' => 'fieldset',
                     '#title' => t('Assigned Servers'),
                     '#collapsible' => TRUE,
                     '#collapsed' => FALSE,
                 );
-            }
 
-            if (count($existing_servers)) {
                 $form['vulnscan_existing_servers']['existing_servers'] = array(
-                    '#title' => t('BSD Servers'),
                     '#type' => 'select',
                     '#multiple' => TRUE,
                     '#description' => t('Select one or more to delete'),
@@ -326,43 +280,19 @@ function vulnscan_admin_settings_servergroup($form, &$form_state) {
                 );
             }
 
-            if (count($existing_win_servers)) {
-                $form['vulnscan_existing_servers']['existing_win_servers'] = array(
-                    '#type' => 'fieldset',
-                    '#title' => t('Windows Servers'),
-                    '#type' => 'select',
-                    '#multiple' => TRUE,
-                    '#description' => t('Select one or more to delete'),
-                    '#options' => $existing_win_servers,
-                );
-            }
-
-            if (count($new_servers) || count($new_win_servers)) {
+            if (count($new_servers)) {
                 $form['vulnscan_new_servers'] = array(
                     '#type' => 'fieldset',
                     '#title' => t('Add New Servers'),
                     '#collapsible' => TRUE,
                     '#collapsed' => FALSE,
                 );
-            }
 
-            if (count($new_servers)) {
                 $form['vulnscan_new_servers']['new_server'] = array(
-                    '#title' => t('Add BSD Server'),
                     '#type' => 'select',
                     '#multiple' => TRUE,
                     '#description' => t('Select one or more to add'),
                     '#options' => $new_servers,
-                );
-            }
-
-            if (count($new_win_servers)) {
-                $form['vulnscan_new_servers']['new_win_server'] = array(
-                    '#title' => t('Add Windows Server'),
-                    '#type' => 'select',
-                    '#multiple' => TRUE,
-                    '#description' => t('Select one or more to add'),
-                    '#options' => $new_win_servers,
                 );
             }
         }
@@ -395,19 +325,10 @@ function vulnscan_admin_settings_servergroup_submit($form, &$form_state) {
         remove_servers_in_server_group($form_state['values']['servergroup'], array_filter($form_state['values']['existing_servers']));
     }
 
-    if (isset($form_state['values']['existing_win_servers'])) {
-        remove_win_servers_in_server_group($form_state['values']['servergroup'], array_filter($form_state['values']['existing_win_servers']));
-    }
-
     if (isset($form_state['values']['new_server'])) {
         if (add_servers_in_server_group($form_state['values']['servergroup'], array_filter($form_state['values']['new_server'])) == false) {
-            form_set_error('new_server', t('Could not assign BSD servers to group.'));
+            form_set_error('new_server', t('Could not assign servers to group.'));
         }
-    }
-
-    if (isset($form_state['values']['new_win_server'])) {
-        if (add_win_servers_in_server_group($form_state['values']['servergroup'], array_filter($form_state['values']['new_win_server'])) == false)
-            form_set_error('new_win_server', t('Could not assign Windows servers to group.'));
     }
 
     drupal_set_message(t('Settings saved'));
