@@ -96,10 +96,21 @@ function vulnscan_admin_settings($form, &$form_state) {
         '#title' => t('New Scanner'),
     );
 
+    $replacements = array(
+        array('%{SERVER}', 'Server being scanned (used in cookies)'),
+        array('%{SITE}', 'Site to scan'),
+        array('%{DIR}', 'Scan result output directory'),
+    );
+
+    $header = array('Replacement', 'Meaning');
+
     $form['vulnscan_scanner_settings']['new_scanner']['replacements'] = array(
         '#type' => 'markup',
         '#prefix' => '<div>',
-        '#markup' => t('Replacements: %{SERVER} - Server being scanned (used in cookies). %{SITE} - Site to scan (Wayfair, Admin Home, etc.). %{DIR} - Scan result output directory.'),
+        '#markup' => theme('table', array(
+            'header' => $header,
+            'rows' => $replacements,
+        )),
         '#suffix' => '</div>',
     );
 
