@@ -172,9 +172,9 @@ function user_scannable_groups($user) {
 function get_site_url($site) {
     switch ($site) {
         case t('Admin Home'):
-            return 'http://adminwayfaircom.csnzoo.com/';
+            return 'http://wayfair.com/';
         case t('Wayfair'):
-            return 'http://wayfaircom.csnzoo.com/';
+            return 'http://wayfair.com/';
     }
 }
 
